@@ -1,0 +1,42 @@
+	; Обход первой строки
+	CLD					; Очищаем флаг направления, обрабатываем по возрастанию адресов (DF = 0)
+	XOR ESI, ESI		; Очищаем регистры 
+	XOR EDI, EDI
+	XOR EDX, EDX
+	XOR ECX, ECX
+	MOV ESI, OFFSET STR1		; Помещаем адрес первой строки в ESI
+	MOV ECX, LENS1		; Помещаем длину первой сроки в ECX - счетчик
+	MOV COUNT, 1		; Нумеруем символы с 1
+LP:
+	MOV AL, [ESI]		; Помещаем адрес первого символа первой строки в AL
+	MOV EBX, ECX		; Помещаем счетчик первой строки в EBX
+	MOV ECX, LENS2		; Помещаем длину второй строки в ECX - счетчик использования SCAS
+	MOV EDI, OFFSET STR2		; Помещаем в EDI адрес второй строки
+	REPNE SCAS STR2		; Сканируем строку пока не встретим равные символы
+	JE EQUAL
+	
+		; Если не встретили равных символов, выводим сообщение
+		MOV EDX, COUNT
+		PUSH EDX
+		PUSH OFFSET TMP
+		PUSH OFFSET BUF
+		CALL wsprintfA	; Переводим номер символа из числа в строку
+		
+		LEA EAX, BUF
+		PUSH EAX
+		PUSH EAX
+		CALL CharToOemA@8
+		PUSH OFFSET BUF
+		CALL lstrlenA@4
+		PUSH 0
+		PUSH OFFSET LENS
+		PUSH EAX
+		PUSH OFFSET BUF
+		PUSH DOUT
+		CALL WriteConsoleA@20
+
+EQUAL:
+		INC ESI			; Переходим на следующий символ первой строки
+		INC COUNT
+		MOV ECX, EBX
+	LOOP LP
